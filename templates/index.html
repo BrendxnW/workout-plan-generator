@@ -6,23 +6,25 @@
     <title>Workout Generator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <h1>Workout Generator</h1>
+    <body>
+        <h1>Workout Generator</h1>
 
-        <fieldset>
-            <legend>Your Workout Level:</legend>
-        <input type="radio" id="Beginner" name="difficulty" value="beginner">
-            <label for="Beginner">Beginner</label><br>
-        <input type="radio" id="Intermediate" name="difficulty" value="intermediate">
-            <label for="Intermediate">Intermediate</label><br>
-        <input type="radio" id="Advanced" name="difficulty" value="Advanced">
-            <label for="Advanced">Advanced</label>
-        </fieldset>
+        <form method="get" action="generate">
+            <fieldset>
+                <legend>Your Workout Level:</legend>
+            <input type="radio" id="Beginner" name="difficulty" value="beginner">
+                <label for="Beginner">Beginner</label><br>
+            <input type="radio" id="Intermediate" name="difficulty" value="intermediate">
+                <label for="Intermediate">Intermediate</label><br>
+            <input type="radio" id="Advanced" name="difficulty" value="Advanced">
+                <label for="Advanced">Advanced</label>
+            </fieldset>
 
-    <div class="centered">
-    <label for="name">🏋️‍♂️:</label>
-    <input type="text" id="name" placeholder="What can I do for you?">
-    </div>
+        <div class="centered">
+        <label for="name">🏋️‍♂️:</label>
+        <input type="text" id="name" placeholder="What can I do for you?">
+        </div>
+        </form>
 
-</body>
+    </body>
 </html>
