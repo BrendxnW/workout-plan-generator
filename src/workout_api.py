@@ -68,10 +68,10 @@ for ex_type in exercise_type:
             data = r.json() if r.text else []
 
             for it in data:
-                key = (it.get("type").lower(), it.get("muscle"), it.get("type"))
+                key = (it.get("name", "").lower(), it.get("muscle"), it.get("type"))
 
                 if not any(
-                    (e.get("type").lower(), e.get("muscle"), e.get("type"))
+                        (e.get("name", "").lower(), e.get("muscle"), e.get("type")) == key
                     for e in all_exercise
                 ):
                     all_exercise.append(it)
@@ -80,6 +80,13 @@ for ex_type in exercise_type:
 
 print(f"Fetched {len(all_exercise)} unique exercises!")
 
-with open("exercise_db.json", "w", encoding="utf-8") as f:
+with open("../data/exercise_db.json", "w", encoding="utf-8") as f:
     json.dump(all_exercise, f, indent=2, ensure_ascii=False)
+
+if __name__ == "__main__":
+    s = requests.Session()
+    s.headers.update({"X-Api-Key": API_KEY})
+    test_params = {"type": "strength", "muscle": "chest", "difficulty": "beginner"}
+    r = s.get(BASE_URL, params=test_params, timeout=10)
+    print("Smoke test:", r.status_code, "items:", len(r.json()))
 

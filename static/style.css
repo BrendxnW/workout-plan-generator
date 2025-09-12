@@ -1,0 +1,14 @@
+legend {
+    font-weight: bold;
+}
+
+fieldset {
+    margin: 20px auto;
+    width: 300px;
+    text-align: left;
+}
+
+.centered {
+    text-align: center
+    margin-top: 20px;
+}
