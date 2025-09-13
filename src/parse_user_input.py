@@ -73,31 +73,30 @@ class ParseInput:
 
         return [ROTATION[i % len(ROTATION)] for i in range(num_days)]
 
-
-
-
-    def classify_difficulty(self, text):
+    def classify_difficulty(self):
         d = self.text
         dif = self.pipe(d, candidate_labels=DIFFICULTY_LABELS)
-        top_label = dif["label"][0]
+        top_label = dif["labels"][0]
         return top_label
 
-
-    def detect_muscles_rules(self, text):
-        ...
-    def detect_muscles_ml(text):  # optional (zero-shot multi-label or embeddings)
-        ...
-    def finalize(intent_partial:dict):
-        ...
-    def parse(text):
+    def extract_equipment(self):
         ...
 
+    def finalize(self):
+        final = {"days": self.extract_days(), "split": self.classify_split(), "difficulty": self.classify_difficulty()}
+        return final
+
+    def parse(self):
+        workout_plan = {}
+        return workout_plan
 
 
 if __name__ == "__main__":
 
-    text = "Can you create me a 4 day beginner workout."
+    test = "Can you create me a leg day expert workout."
+    test2 = "Can you create me a 4 day workout for beginner?"
 
-    UI = ParseInput(text)
-    result = UI.classify_split()
-    print(result)
+    UI = ParseInput(test2)
+
+    finalize = UI.finalize()
+    print(finalize)
