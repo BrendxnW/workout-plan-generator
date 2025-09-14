@@ -1,5 +1,6 @@
 from transformers import pipeline
 from parse_user_input import ParseInput
+import sqlite3
 
 PUSH = {"chest", "triceps", "shoulders"}
 PULL = {"biceps", "lats", "middle_back", "lower_back", "traps", "forearms", "neck"}
@@ -13,7 +14,4 @@ class WorkoutPlanner:
         self.input = ParseInput.parse(text)
 
     def plan_workout(self):
-        plan = []
-        for days in
-
-        return plan
+        ...
