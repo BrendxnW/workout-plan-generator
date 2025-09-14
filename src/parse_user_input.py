@@ -82,13 +82,9 @@ class ParseInput:
     def extract_equipment(self):
         ...
 
-    def finalize(self):
+    def parse(self):
         final = {"days": self.extract_days(), "split": self.classify_split(), "difficulty": self.classify_difficulty()}
         return final
-
-    def parse(self):
-        workout_plan = {}
-        return workout_plan
 
 
 if __name__ == "__main__":
@@ -98,5 +94,5 @@ if __name__ == "__main__":
 
     UI = ParseInput(test2)
 
-    finalize = UI.finalize()
+    finalize = UI.parse()
     print(finalize)
