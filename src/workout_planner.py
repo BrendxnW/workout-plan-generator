@@ -1,8 +1,10 @@
 from transformers import pipeline
 from parse_user_input import ParseInput
 
-PUSH_WORKOUTS = ['chest', 'triceps', 'shoulders']
-PULL_WORKOUTS = ['backs', 'biceps']
+PUSH = {"chest", "triceps", "shoulders"}
+PULL = {"biceps", "lats", "middle_back", "lower_back", "traps", "forearms", "neck"}
+LEGS = {"quadriceps", "hamstrings", "glutes", "calves", "abductors", "adductors"}
+CORE = {"abdominals", "lower_back"}
 DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 class WorkoutPlanner:
