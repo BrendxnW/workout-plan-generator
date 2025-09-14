@@ -1,6 +1,6 @@
 from transformers import pipeline
 from parse_user_input import ParseInput
-import sqlite3
+from .sql_backend import fetch_by_block
 
 PUSH = {"chest", "triceps", "shoulders"}
 PULL = {"biceps", "lats", "middle_back", "lower_back", "traps", "forearms", "neck"}

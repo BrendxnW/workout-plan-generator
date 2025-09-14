@@ -7,6 +7,8 @@ WORD2NUM = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "sev
 DIFFICULTY_LABELS = ['beginner', 'intermediate', 'expert']
 SPLIT_LABELS = ['push', 'pull', 'leg', 'upper', 'lower', 'full', 'chest', 'arm', 'bicep', 'tricep', 'shoulder', 'back', 'abs']
 ROTATION = ['push', 'pull', 'legs']
+EQUIPMENTS = ['bodyweight', 'cable', 'machine', 'sled', 'ropes', 'barbell', 'dumbbell', 'kettlebell', 'bands']
+DEFAULT_EQUP = ["barbell","dumbbell","bodyweight","cable"]
 MUSCLE_LABELS = ['abdominals', 'abductors', 'adductors', 'biceps', 'calves', 'chest', 'forearms', 'glutes',
 'hamstrings', 'lats', 'lower back', 'middle back', 'neck', 'quadriceps', 'traps', 'triceps', 'shoulders']
 _CANON = {
@@ -79,11 +81,21 @@ class ParseInput:
         top_label = dif["labels"][0]
         return top_label
 
-    def extract_equipment(self):
-        ...
+    def extract_equipment(self, threshold=0.3):
+        e = self.text
+        equip = self.pipe(e, candidate_labels=EQUIPMENTS)
+        if not equip or "labels" not in equip:
+            return DEFAULT_EQUP
+
+        chosen = [label for label, score in zip(equip["labels"], equip["scores"]) if score >= threshold]
+        return chosen or DEFAULT_EQUP
 
     def parse(self):
-        final = {"days": self.extract_days(), "split": self.classify_split(), "difficulty": self.classify_difficulty()}
+        final = {"days": self.extract_days(),
+                 "split": self.classify_split(),
+                 "difficulty": self.classify_difficulty(),
+                 "equipment": self.extract_equipment()
+                 }
         return final
 
 
@@ -91,8 +103,9 @@ if __name__ == "__main__":
 
     test = "Can you create me a leg day expert workout."
     test2 = "Can you create me a 4 day workout for beginner?"
+    test3 = "Can you create me a arm day beginner workout but I only have dumbbells"
 
-    UI = ParseInput(test2)
+    UI = ParseInput(test3)
 
     finalize = UI.parse()
     print(finalize)
