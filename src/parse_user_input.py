@@ -117,8 +117,11 @@ class ParseInput:
                 return {"available": available, "unavailable": unavailable}
             else:
                 return {"available": sorted(hits), "unavailable": []}
+
         spec_day = self.pipe(sd, candidate_labels=SPECDAYS, multi_label=True)
         chosen = [label for label, score in zip(spec_day["labels"], spec_day["scores"]) if score >= threshold]
+        if not chosen:
+            return {"available": SPECDAYS[:], "unavailable": []}
         return {"available": chosen, "unavailable": []}
 
     def parse(self):
@@ -137,7 +140,7 @@ if __name__ == "__main__":
     test2 = "Can you create me a 4 day workout for beginner and i can't workout on tuesday?"
     test3 = "Can you create me a arm day beginner workout but I only have dumbbells"
 
-    UI = ParseInput(test2)
+    UI = ParseInput(test)
 
     finalize = UI.parse()
     print(finalize)
