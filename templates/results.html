@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scalre=1.0"/>
+    <title>Your Personalized Workout Plan!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <a href="/" class="back"><< back</a>
+    <h1>Your {{ num_days }}-day plan ({{ difficulty }})</h1>
+    <p class="sub"> {{ user_text }} </p>
+
+    <ol class="plan">
+        {% for item in plan%}
+        <li class="day">
+            <div class="badge">Day {{ loop.index }} </div>
+            <div class="title"></div>
+            {% if item is string %}
+              {{ item|replace("_"," ")|title }}
+            {% elif item.split %}
+              {{ item.split|replace("_"," ")|title }}
+            {% elif item.muscles %}
+              {{ ", ".join(item.muscles)|replace("_"," ")|title }}
+            {% else %}
+              Day {{ loop.index }}
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ol>
+
+    <!-- Placeholder CTA: in your real flow you’d render exercises per day -->
+    <div class="actions">
+      <a href="/" class="button">Make another</a>
+    </div>
+  </main>
+</body>
+</html>
