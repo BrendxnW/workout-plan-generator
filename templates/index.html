@@ -8,8 +8,7 @@
 </head>
     <body>
         <h1>WORKOUT GENERATOR</h1>
-
-        <form method="get" action="generate">
+        <form action="/generate" method="GET" >
             <fieldset>
                 <legend>Your Workout Level:</legend>
             <input type="radio" id="Beginner" name="difficulty" value="beginner">
@@ -20,9 +19,13 @@
                 <label for="Expert">Advanced</label>
             </fieldset>
 
+
+
         <div class="centered">
         <label for="name">🏋️‍♂️:</label>
         <input type="text" id="name" placeholder="What can I do for you?">
+            <p class="hint">Try to be as specific to get best results
+                (eg. days you can't work out, equipment you have available, goals)</p>
         </div>
         </form>
 
