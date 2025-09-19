@@ -61,10 +61,14 @@ COMBO_GROUPS = {
 
 
 class WorkoutPlanner:
-    def __init__(self, text):
-        self.text = text
-        self.parsed = ParseInput(text).parse()
+    def __init__(self, source, **overrides):
         self.pipe = pipeline("zero-shot-classification", model="valhalla/distilbart-mnli-12-1", device=0)
+        if isinstance(source, dict):
+            parsed = dict(source)
+        else:
+            parsed = ParseInput(source).parse()
+        self.parsed = parsed
+
 
     def _repeat_or_trim(self, seq, n):
         return [seq[i % len(seq)] for i in range(n)]
@@ -91,9 +95,9 @@ class WorkoutPlanner:
         if isinstance(defaults, list):
             plan = defaults
         elif isinstance(defaults, dict):
-            plan = defaults.get(diff) or defaults.get("beginner")
+            plan = defaults.get(diff) or next(iter(defaults.values()))
         else:
-            plan = DEFAULT_SPLITS[3]["beginner"]
+            plan = DEFAULT_SPLITS.get(3) or ["push", "pull", "legs"]
 
         return self._repeat_or_trim(plan, days)
 

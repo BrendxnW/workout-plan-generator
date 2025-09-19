@@ -37,16 +37,12 @@ class ParseInput:
         self.text = text.strip().lower()
 
     def extract_days(self):
-        m = re.search(r"(one|two|three|four|five|six|seven|\d+)\s*-?\s*day?", self.text)
-        if m:
-            token = m.group(1)
-            if token.isdigit():
-                num_days = int(token)
-            else:
-                num_days = WORD2NUM[token]
-        else:
-            num_days = 1
-        return num_days
+        t = self.text
+        m = re.search(r"\b(one|two|three|four|five|six|seven|\d+)\s*-?\s*days?\b", t)
+        if not m:
+            return 1
+        tok = m.group(1)
+        return max(1, min(int(tok) if tok.isdigit() else WORD2NUM[tok], 7))
 
     def classify_split(self):
         def _extract_explicit_splits(t: str):
@@ -125,11 +121,32 @@ class ParseInput:
         return {"available": chosen, "unavailable": []}
 
     def parse(self):
-        final = {"days": self.extract_days(),
-                 "split": self.classify_split(),
-                 "difficulty": self.classify_difficulty(),
-                 "equipment": self.extract_equipment(),
-                 "specific_days": self.specific_days()
+        t = self.text
+
+        if not t:
+            # return sane defaults without touching the model
+            return {"difficulty": "beginner", "days": 3, "explicit_splits": []}
+
+            # ✅ ALWAYS provide labels and a non-empty sequence
+        split_pred = self.pipe(
+            sequences=t,
+            candidate_labels=SPLIT_LABELS,
+            multi_label=True
+        )
+        diff_pred = self.pipe(
+            sequences=t,
+            candidate_labels=DIFFICULTY_LABELS,
+            multi_label=False
+        )
+
+
+        final = {
+            "num_days": self.extract_days(),
+            "difficulty": self.classify_difficulty(),
+            "explicit_splits": self.classify_split() or [],
+            "specific_days": self.specific_days(),
+            "equipment": self.extract_equipment() or [],
+            "user_text": self.text,
                  }
         return final
 

@@ -8,9 +8,6 @@
 </head>
     <body>
         <h1>WORKOUT GENERATOR</h1>
-
-
-
         <form action="/generate" method="POST" >
             <fieldset>
                 <legend>Your Workout Level:</legend>
@@ -22,13 +19,13 @@
                 <label for="Expert">Advanced</label>
             </fieldset>
 
-
-
         <div class="centered">
-        <label for="prompt">🏋️‍♂️:</label>
-        <input type="text" id="prompt" placeholder="What can I do for you?">
-            <p class="hint">Try to be as specific to get best results
-                (eg. days you can't work out, equipment you have available, goals)</p>
+          <label for="prompt">🏋️‍♂️:</label>
+          <input type="text" id="prompt" name="prompt" placeholder="What can I do for you?">
+          <p class="hint">
+            Try to be as specific to get best results
+            (eg. days you can't work out, equipment you have available, goals)
+          </p>
         </div>
 
             <button type="submit">Generate Plan</button>
