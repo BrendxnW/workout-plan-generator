@@ -13,15 +13,6 @@ MUSCLE_LABELS = ['abdominals', 'abductors', 'adductors', 'biceps', 'calves', 'ch
 'hamstrings', 'lats', 'lower back', 'middle back', 'neck', 'quadriceps', 'traps', 'triceps', 'shoulders']
 SPECDAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday']
 NEG_CUES = r"\b(can't|cannot|won't|no|except|but\s+not|not\s+on)\b"
-DAY_ALIASES = {
-    "mon":"monday","monday":"monday",
-    "tue":"tuesday","tues":"tuesday","tuesday":"tuesday",
-    "wed":"wednesday","weds":"wednesday","wednesday":"wednesday",
-    "thu":"thursday","thur":"thursday","thurs":"thursday","thursday":"thursday",
-    "fri":"friday","friday":"friday",
-    "sat":"saturday","saturday":"saturday",
-    "sun":"sunday","sunday":"sunday",
-}
 _CANON = {
     'leg': 'legs', 'legs': 'legs',
     'arm': 'arms', 'arms': 'arms',

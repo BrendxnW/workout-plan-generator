@@ -1,8 +1,8 @@
 from src.parse_user_input import ParseInput
-from src.sql_backend import fetch_by_block, fetch_by_muscles, DB_PATH, fetch_by_muscles_balanced
+from src.sql_backend import fetch_by_block, DB_PATH, fetch_by_muscles_balanced
 
 PUSH = {"chest", "triceps", "shoulders"}
-PULL = {"biceps", "lats", "middle_back", "lower_back", "traps", "forearms", "neck"}
+PULL = {"biceps", "lats", "middle_back", "lower_back"}
 LEGS = {"quadriceps", "hamstrings", "glutes", "calves", "abductors", "adductors"}
 CORE = {"abdominals", "lower_back"}
 BLOCK_SPLITS = {"push", "pull", "legs", "upper", "lower", "full"}
@@ -58,6 +58,19 @@ COMBO_GROUPS = {
               "forearms","quadriceps","hamstrings","glutes","calves","abductors","adductors","abdominals"],
 }
 
+MUSCLE_QUOTAS = {
+    "chest": (3, 5),
+    "lats": (3, 5), "middle_back": (2, 4), "lower_back": (1, 2),
+    "quadriceps": (3, 5), "hamstrings": (3, 5), "glutes": (2, 4),
+
+    "shoulders": (2, 4), "biceps": (2, 3), "triceps": (2, 3),
+
+    "traps": (1, 2), "rear_delts": (1, 2), "forearms": (1, 2),
+    "calves": (1, 2), "abductors": (0, 1), "adductors": (0, 1),
+    "abdominals": (1, 2),
+
+    "_default": (1, 2),
+}
 
 class WorkoutPlanner:
     def __init__(self, source, **overrides):
@@ -99,21 +112,19 @@ class WorkoutPlanner:
             week = week + ["rest"] * (7 - len(week))
         return week[:7]
 
-    def _fetch_for_split(self, split, equipment, difficulty, max_per, min_per):
+    def _fetch_for_split(self, split, equipment, difficulty, limit):
         if split == "rest":
             return []
 
         if split in BLOCK_SPLITS:
-            return fetch_by_block(split, equipment, difficulty, max_per, DB_PATH) or []
+            return fetch_by_block(split, equipment, difficulty, limit, DB_PATH) or []
 
         muscle = COMBO_GROUPS.get(split, [])
         if not muscle:
             return []
-        return fetch_by_muscles_balanced(muscle, equipment, difficulty, min_per, max_per, DB_PATH) or []
+        return fetch_by_muscles_balanced(muscle, equipment, difficulty, 3,4, DB_PATH) or []
 
-
-
-    def plan_workout(self, min_per=3, max_per=4):
+    def plan_workout(self, limit=4):
         print("DEBUG parsed:", self.parsed)
 
         week = self._resolve_week_split()
@@ -122,7 +133,7 @@ class WorkoutPlanner:
 
         plan = []
         for day, split in enumerate(week, 1):
-            exs = self._fetch_for_split(split, equip, diff, min_per, max_per)
+            exs = self._fetch_for_split(split, equip, diff, limit)
             plan.append({"day": day, "split": split, "exercises": exs})
         return plan
 

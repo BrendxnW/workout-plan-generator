@@ -21,10 +21,8 @@ def _diff_allowed(difficulty):
         return "intermediate", "beginner"
     return ("beginner",)
 
-def _pick_count(min_per, max_per):
-    if max_per <= min_per:
-        return max(1, min_per)
-    return random.randint(min_per,max_per)
+def _pick_count():
+    return random.randint(3, 4)
 
 def fetch_for_muscle(
     muscle: str,
@@ -33,7 +31,7 @@ def fetch_for_muscle(
     max_per: int,
     db_path
 ):
-    """Grab up to max_per exercises for a single muscle, preferring requested difficulty tier."""
+
     eq_list = equipment or ["barbell", "dumbbell", "bodyweight", "cable"]
     diffs = _diff_allowed(difficulty)
 
@@ -66,12 +64,13 @@ def fetch_for_muscle(
         rows = con.execute(sql, params).fetchall()
         return [dict(r) for r in rows]
 
+def fetch_by_muscle_quota(muscle, equipment, difficulty, db_path),
+
+
 def fetch_by_muscles_balanced(
     muscles,
     equipment,
     difficulty: str,
-    min_per_muscle: int,
-    max_per_muscle: int,
     db_path
 ):
     """
@@ -81,7 +80,7 @@ def fetch_by_muscles_balanced(
     """
     out = []
     for m in muscles:
-        want = _pick_count(min_per_muscle, max_per_muscle)
+        want = _pick_count()
         rows = fetch_for_muscle(m, equipment, difficulty, want, db_path)
         out.extend(rows[:want])
     return out
@@ -114,11 +113,4 @@ def fetch_by_block(block, equipment, difficulty, limit, db_path):
 
     where_sql = "JOIN exercise_splits s ON s.exercise_id = e.id WHERE s.split = ?"
     where_params = [block]
-    return _query_exercises(where_sql, where_params, equipment, difficulty, limit, db_path)
-
-
-def fetch_by_muscles(muscles, equipment, difficulty, limit, db_path):
-    placeholder_mus = ",".join("?" * len(muscles))
-    where_sql = f"WHERE e.muscle IN ({placeholder_mus})"
-    where_params = muscles
     return _query_exercises(where_sql, where_params, equipment, difficulty, limit, db_path)
