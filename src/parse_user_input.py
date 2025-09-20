@@ -44,6 +44,7 @@ class ParseInput:
         tok = m.group(1)
         return max(1, min(int(tok) if tok.isdigit() else WORD2NUM[tok], 7))
 
+
     def classify_split(self, num_days=None):
         def _extract_explicit_splits(t: str):
             day_hits = re.findall(

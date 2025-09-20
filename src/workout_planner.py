@@ -9,26 +9,26 @@ CORE = {"abdominals", "lower_back"}
 DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 DEFAULT_SPLITS = {
-    2: ["upper", "lower"],
+    2: ["upper", "rest", "rest", "lower", "rest", "rest", "rest"],
     3: {
-        "beginner": ["push", "pull", "legs"],
-        "intermediate": ["chest_triceps", "back_biceps", "legs_shoulders"],
-        "expert": ["chest_triceps", "back_biceps", "legs_shoulders"]
+        "beginner": ["push", "rest", "pull", "rest", "legs", "rest", "rest"],
+        "intermediate": ["chest_triceps", "rest", "back_biceps", "rest", "legs_shoulders", "rest", "rest"],
+        "expert": ["chest_triceps", "rest", "back_biceps", "rest", "legs_shoulders", "rest", "rest"]
     },
     4: {
         "beginner": ["push", "pull", "legs", "full"],
-        "intermediate": ["chest_triceps", "back_biceps", "shoulders", "legs"],
-        "expert": ["chest_triceps", "back_biceps", "shoulders", "legs"]
+        "intermediate": ["chest_triceps", "rest", "back_biceps", "rest", "shoulders", "legs", "rest"],
+        "expert": ["chest_triceps", "rest", "back_biceps", "rest", "shoulders", "legs", "rest"]
     },
     5: {
         "beginner": ["push", "pull", "legs", "upper", "lower"],
-        "intermediate": ["chest_triceps", "back_shoulders", "chest_biceps", "legs", "back_arms"],
-        "expert": ["chest_triceps", "back_shoulders", "chest_biceps", "legs", "back_arms"]
+        "intermediate": ["chest_triceps", "back_shoulders", "rest",  "chest_biceps", "legs", "back_arms", "rest"],
+        "expert": ["chest_triceps", "back_shoulders", "rest",  "chest_biceps", "legs", "back_arms", "rest"]
     },
     6: {
         "beginner":     ["push", "pull", "legs", "push", "pull", "legs"],
-        "intermediate": ["chest_triceps", "back_biceps", "legs", "shoulders", "upper", "lower"],
-        "expert":       ["chest_triceps", "back_biceps", "legs", "shoulders", "upper", "lower"],
+        "intermediate": ["chest_triceps", "back_biceps", "legs", "shoulders", "rest", "upper", "lower"],
+        "expert":       ["chest_triceps", "back_biceps", "legs", "shoulders", "rest", "upper", "lower"],
     },
     7: {
         "beginner":     ["push", "pull", "legs", "push", "pull", "legs", "full"],
@@ -89,7 +89,7 @@ class WorkoutPlanner:
 
         explicit_splits = self.parsed.get("explicit_splits") or []
         if explicit_splits:
-            return self._repeat_or_trim(explicit_splits, days)
+            return explicit_splits
 
         defaults = DEFAULT_SPLITS.get(days)
         if isinstance(defaults, list):
@@ -99,7 +99,7 @@ class WorkoutPlanner:
         else:
             plan = DEFAULT_SPLITS.get(3) or ["push", "pull", "legs"]
 
-        return self._repeat_or_trim(plan, days)
+        return plan
 
 
 if __name__ == "__main__":
