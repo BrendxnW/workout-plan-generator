@@ -43,8 +43,8 @@ def generate():
     # 3) normalize minimal expectations so planner doesn’t bail to defaults
     parsed["difficulty"] = (parsed.get("difficulty") or "beginner").lower()
 
-    # 4) pass STRUCTURED data to the planner (not a mashed string)
-    wp = WorkoutPlanner(parsed)   # <-- key change
+
+    wp = WorkoutPlanner(parsed)
     plan = wp.plan_workout()
 
     return render_template(

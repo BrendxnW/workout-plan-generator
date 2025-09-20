@@ -44,7 +44,7 @@ class ParseInput:
         tok = m.group(1)
         return max(1, min(int(tok) if tok.isdigit() else WORD2NUM[tok], 7))
 
-    def classify_split(self):
+    def classify_split(self, num_days=None):
         def _extract_explicit_splits(t: str):
             day_hits = re.findall(
                 r"\b(push|pull|legs?|upper|lower|full|chest|back|shoulders?|arms?|biceps?|triceps?|abs)\s*(?:day|workout)?\b",
@@ -66,21 +66,15 @@ class ParseInput:
             hits = day_hits + list_hits
             return [_CANON.get(h, h) for h in hits] if hits else []
 
-        num_days = self.extract_days()
-        t = self.text
+        if num_days is None:
+            num_days = self.extract_days()
 
-        explicit = _extract_explicit_splits(t)
+        explicit = _extract_explicit_splits(self.text)
         if explicit:
             return [explicit[i % len(explicit)] for i in range(num_days)]
 
-        res = self.pipe(t, candidate_labels=SPLIT_LABELS)
-        top_label = _CANON.get(res["labels"][0], res["labels"][0])
-        top_score = float(res["scores"][0])
+        return []
 
-        if top_score >= 0.60:
-            return [top_label] * num_days
-
-        return [ROTATION[i % len(ROTATION)] for i in range(num_days)]
 
     def classify_difficulty(self):
         d = self.text
@@ -124,21 +118,7 @@ class ParseInput:
         t = self.text
 
         if not t:
-            # return sane defaults without touching the model
             return {"difficulty": "beginner", "days": 3, "explicit_splits": []}
-
-            # ✅ ALWAYS provide labels and a non-empty sequence
-        split_pred = self.pipe(
-            sequences=t,
-            candidate_labels=SPLIT_LABELS,
-            multi_label=True
-        )
-        diff_pred = self.pipe(
-            sequences=t,
-            candidate_labels=DIFFICULTY_LABELS,
-            multi_label=False
-        )
-
 
         final = {
             "num_days": self.extract_days(),
@@ -154,10 +134,10 @@ class ParseInput:
 if __name__ == "__main__":
 
     test = "Can you create me a leg day expert workout."
-    test2 = "Can you create me a 4 day workout for beginner and i can't workout on tuesday?"
+    test2 = "Can you create me a 4 day workout for expert and i can't workout on tuesday?"
     test3 = "Can you create me a arm day beginner workout but I only have dumbbells"
 
-    UI = ParseInput(test)
+    UI = ParseInput(test2)
 
     finalize = UI.parse()
     print(finalize)

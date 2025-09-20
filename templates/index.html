@@ -8,16 +8,23 @@
 </head>
     <body>
         <h1>WORKOUT GENERATOR</h1>
-        <form action="/generate" method="POST" >
-            <fieldset>
-                <legend>Your Workout Level:</legend>
-            <input type="radio" id="Beginner" name="difficulty" value="beginner">
-                <label for="Beginner">Beginner</label><br>
-            <input type="radio" id="Intermediate" name="difficulty" value="intermediate">
-                <label for="Intermediate">Intermediate</label><br>
-            <input type="radio" id="Expert" name="difficulty" value="Expert">
-                <label for="Expert">Advanced</label>
-            </fieldset>
+        <form action="/generate" method="POST">
+          <fieldset>
+            <legend>Your Workout Level:</legend>
+            <label>
+              <input type="radio" name="difficulty" value="beginner" checked>
+              Beginner
+            </label><br>
+            <label>
+              <input type="radio" name="difficulty" value="intermediate">
+              Intermediate
+            </label><br>
+            <label>
+              <input type="radio" name="difficulty" value="expert">
+              Advanced
+            </label>
+          </fieldset>
+
 
         <div class="centered">
           <label for="prompt">🏋️‍♂️:</label>
