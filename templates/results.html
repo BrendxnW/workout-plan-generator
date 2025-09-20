@@ -9,30 +9,48 @@
 <body>
     <a href="/" class="back"><< back</a>
     <h1>Your {{ num_days }}-day plan ({{ difficulty }})</h1>
-    <p class="sub"> {{ user_text }} </p>
+    {% if error %}
+  <p class="error">{{ error }}</p>
+{% endif %}
 
-    <ol class="plan">
-        {% for item in plan%}
-        <li class="day">
-            <div class="badge">Day {{ loop.index }} </div>
-            <div class="title"></div>
-            {% if item is string %}
-              {{ item|replace("_"," ")|title }}
-            {% elif item.split %}
-              {{ item.split|replace("_"," ")|title }}
-            {% elif item.muscles %}
-              {{ ", ".join(item.muscles)|replace("_"," ")|title }}
-            {% else %}
-              Day {{ loop.index }}
-            {% endif %}
-          </div>
-        </li>
-      {% endfor %}
-    </ol>
+{% if not plan %}
+  <p>No plan yet. Try a prompt like:
+    <em>“4-day intermediate, can’t lift Tuesdays, dumbbells only.”</em>
+  </p>
+{% else %}
+  {% for day in plan %}
+    {% if day is string %}
 
-    <div class="actions">
-      <a href="/" class="button">Make another</a>
-    </div>
-  </main>
-</body>
-</html>
+      <section class="day">
+        <h3>Day {{ loop.index }} — {{ day|replace('_',' ')|title }}</h3>
+        {% if day|lower == 'rest' %}
+          <p class="muted">Rest day 😴</p>
+        {% else %}
+          <p class="muted">Exercises loading… (update backend to return dicts for details)</p>
+        {% endif %}
+      </section>
+    {% else %}
+
+      <section class="day">
+        <h3>Day {{ day.day }} — {{ day.split|replace('_',' ')|title }}</h3>
+
+        {% if day.split|lower == 'rest' or not day.exercises %}
+          <p class="muted">Rest day 😴</p>
+        {% else %}
+          <ul class="exercise-list">
+            {% for ex in day.exercises %}
+              <li>
+                <strong>{{ ex.name }}</strong>
+                <small>
+                  ({{ ex.muscle|replace('_',' ') }},
+                  {{ ex.equipment }},
+                  {{ ex.difficulty }})
+                </small>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </section>
+    {% endif %}
+  {% endfor %}
+{% endif %}

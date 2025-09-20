@@ -1,12 +1,11 @@
-from transformers import pipeline
 from src.parse_user_input import ParseInput
-from src.sql_backend import fetch_by_block
+from src.sql_backend import fetch_by_block, fetch_by_muscles, DB_PATH, fetch_by_muscles_balanced
 
 PUSH = {"chest", "triceps", "shoulders"}
 PULL = {"biceps", "lats", "middle_back", "lower_back", "traps", "forearms", "neck"}
 LEGS = {"quadriceps", "hamstrings", "glutes", "calves", "abductors", "adductors"}
 CORE = {"abdominals", "lower_back"}
-DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+BLOCK_SPLITS = {"push", "pull", "legs", "upper", "lower", "full"}
 
 DEFAULT_SPLITS = {
     2: ["upper", "rest", "rest", "lower", "rest", "rest", "rest"],
@@ -62,43 +61,69 @@ COMBO_GROUPS = {
 
 class WorkoutPlanner:
     def __init__(self, source, **overrides):
-        self.pipe = pipeline("zero-shot-classification", model="valhalla/distilbart-mnli-12-1", device=0)
-        if isinstance(source, dict):
-            parsed = dict(source)
-        else:
-            parsed = ParseInput(source).parse()
-        self.parsed = parsed
+        parsed = dict(source) if isinstance(source, dict) else ParseInput(source).parse()
+        for k, v in (overrides or {}).items():
+            if v not in (None, "", []):
+                parsed[k] = v
 
-
-    def _repeat_or_trim(self, seq, n):
-        return [seq[i % len(seq)] for i in range(n)]
-
-    def plan_workout(self):
-        print("DEBUG parsed:", self.parsed)
-
-        days_raw = self.parsed.get("num_days") or self.parsed.get("days") or 3
+        days_raw = parsed.get("num_days") or parsed.get("days") or 3
         try:
             days = int(days_raw)
-        except Exception:
+        except:
             days = 3
-        days = max(1, min(days, 7))
+        parsed["days"] = max(1, min(days, 7))
 
-        diff = (self.parsed.get("difficulty") or "beginner").strip().lower()
-        if diff == "advanced":
-            diff = "expert"
+        diff = (parsed.get("difficulty") or "beginner").strip().lower()
+        if diff == "advanced": diff = "expert"
+        parsed["difficulty"] = diff
+        parsed["equipment"] = parsed.get("equipment") or ["barbell", "dumbbell", "bodyweight", "cable"]
+        self.parsed = parsed
 
-        explicit_splits = self.parsed.get("explicit_splits") or []
-        if explicit_splits:
-            return explicit_splits
+    def _resolve_week_split(self):
+        days = self.parsed["days"]
+        diff = self.parsed["difficulty"]
+        explicit = self.parsed.get("explicit_splits") or []
 
-        defaults = DEFAULT_SPLITS.get(days)
-        if isinstance(defaults, list):
-            plan = defaults
-        elif isinstance(defaults, dict):
-            plan = defaults.get(diff) or next(iter(defaults.values()))
+        if explicit:
+            week = list(explicit)
         else:
-            plan = DEFAULT_SPLITS.get(3) or ["push", "pull", "legs"]
+            default = DEFAULT_SPLITS.get(days)
+            if isinstance(default, list):
+                week = default
+            elif isinstance(default, dict):
+                week = default.get(diff) or next(iter(default.values()))
+            else:
+                week = DEFAULT_SPLITS[3]["beginner"]
 
+        if len(week) < 7:
+            week = week + ["rest"] * (7 - len(week))
+        return week[:7]
+
+    def _fetch_for_split(self, split, equipment, difficulty, max_per, min_per):
+        if split == "rest":
+            return []
+
+        if split in BLOCK_SPLITS:
+            return fetch_by_block(split, equipment, difficulty, max_per, DB_PATH) or []
+
+        muscle = COMBO_GROUPS.get(split, [])
+        if not muscle:
+            return []
+        return fetch_by_muscles_balanced(muscle, equipment, difficulty, min_per, max_per, DB_PATH) or []
+
+
+
+    def plan_workout(self, min_per=3, max_per=4):
+        print("DEBUG parsed:", self.parsed)
+
+        week = self._resolve_week_split()
+        equip = self.parsed["equipment"]
+        diff = self.parsed["difficulty"]
+
+        plan = []
+        for day, split in enumerate(week, 1):
+            exs = self._fetch_for_split(split, equip, diff, min_per, max_per)
+            plan.append({"day": day, "split": split, "exercises": exs})
         return plan
 
 

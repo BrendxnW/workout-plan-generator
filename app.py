@@ -16,7 +16,6 @@ def index():
 
 @app.route("/generate", methods=["GET", "POST"])
 def generate():
-    # Works for both GET (request.args) and POST (request.form)
     data = request.values
 
     user_text = (data.get("prompt") or "").strip()
@@ -31,16 +30,14 @@ def generate():
             user_text="",
             error="Please enter a prompt or choose settings."
         )
-    # 1) parse the free text into structured fields
-    parsed = ParseInput(user_text).parse()  # e.g. {"difficulty": "...", "days": 3, "split": "...", ...}
 
-    # 2) override with explicit form controls if present (explicit beats implicit)
+    parsed = ParseInput(user_text).parse()
+
     if difficulty:
         parsed["difficulty"] = difficulty
     if num_days_raw.isdigit():
         parsed["days"] = int(num_days_raw)
 
-    # 3) normalize minimal expectations so planner doesn’t bail to defaults
     parsed["difficulty"] = (parsed.get("difficulty") or "beginner").lower()
 
 

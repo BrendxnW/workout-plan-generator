@@ -1,5 +1,6 @@
 from pathlib import Path
 import sqlite3
+import random
 
 
 DB_PATH = Path(__file__).resolve().parents[1]/ "data" / "workouts.db"
@@ -13,27 +14,94 @@ def connect(db_path):
     return con
 
 def _diff_allowed(difficulty):
-    if difficulty == "beginner":
-        diff_allowed = "beginner"
+    difficulty = (difficulty or "beginner").lower()
+    if difficulty == "expert":
+        return "expert", "intermediate", "beginner"
     if difficulty == "intermediate":
-        diff_allowed = ("intermediate","beginner")
-    return ("expert","intermediate","beginner")
+        return "intermediate", "beginner"
+    return ("beginner",)
+
+def _pick_count(min_per, max_per):
+    if max_per <= min_per:
+        return max(1, min_per)
+    return random.randint(min_per,max_per)
+
+def fetch_for_muscle(
+    muscle: str,
+    equipment,
+    difficulty: str,
+    max_per: int,
+    db_path
+):
+    """Grab up to max_per exercises for a single muscle, preferring requested difficulty tier."""
+    eq_list = equipment or ["barbell", "dumbbell", "bodyweight", "cable"]
+    diffs = _diff_allowed(difficulty)
+
+    placeholders_eq   = ",".join("?" * len(eq_list))
+    placeholders_diff = ",".join("?" * len(diffs))
+
+    sql = f"""
+        SELECT e.id, e.name, e.muscle, e.equipment, e.difficulty
+        FROM exercise e
+        WHERE e.muscle = ?
+          AND e.equipment IN ({placeholders_eq})
+          AND e.difficulty IN ({placeholders_diff})
+        ORDER BY CASE e.difficulty
+                   WHEN ? THEN 1
+                   WHEN ? THEN 2
+                   WHEN ? THEN 3
+                   ELSE 999
+                 END, RANDOM()
+        LIMIT ?
+    """
+
+    pref = list(diffs) + ["expert","intermediate","beginner"]
+    seen = set(); pref = [x for x in pref if not (x in seen or seen.add(x))][:3]
+    while len(pref) < 3:
+        pref.append("beginner")
+
+    params = [muscle, *eq_list, *diffs, *pref, max_per]
+    with connect(db_path) as con:
+        con.row_factory = sqlite3.Row
+        rows = con.execute(sql, params).fetchall()
+        return [dict(r) for r in rows]
+
+def fetch_by_muscles_balanced(
+    muscles,
+    equipment,
+    difficulty: str,
+    min_per_muscle: int,
+    max_per_muscle: int,
+    db_path
+):
+    """
+    For each muscle in order, return 3–5 (configurable) exercises.
+    If fewer exist, return as many as available.
+    Ensures per-muscle balance.
+    """
+    out = []
+    for m in muscles:
+        want = _pick_count(min_per_muscle, max_per_muscle)
+        rows = fetch_for_muscle(m, equipment, difficulty, want, db_path)
+        out.extend(rows[:want])
+    return out
 
 def _query_exercises(where_sql, where_params, equipment, difficulty, limit, db_path):
-    eq_list = equipment or ["barbell","dumbbell","bodyweight","cable"]
+    eq_list = equipment or ["barbell", "dumbbell", "bodyweight", "cable"]
     diffs = _diff_allowed(difficulty)
 
     placeholders_eq = ",".join("?" * len(eq_list))
     placeholders_diff = ",".join("?" * len(diffs))
 
     sql = f"""
-            SELECT e.id, e.name, e.muscle, e.equipment, e.difficulty
-                FROM exercise e
-            {where_sql}
-            AND e.equipment IN ({placeholders_eq})
-            AND e.difficulty IN ({placeholders_diff}
-            LIMIT ?
-"""
+           SELECT e.id, e.name, e.muscle, e.equipment, e.difficulty
+           FROM exercise e
+           {where_sql}
+           AND e.equipment IN ({placeholders_eq})
+           AND e.difficulty IN ({placeholders_diff})
+           ORDER BY RANDOM()
+           LIMIT ?
+       """
 
     params = where_params + eq_list + list(diffs) + [limit]
     with connect(db_path) as con:
