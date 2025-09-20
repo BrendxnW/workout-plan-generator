@@ -1,5 +1,5 @@
 from src.parse_user_input import ParseInput
-from src.sql_backend import fetch_by_block, DB_PATH, fetch_by_muscles_balanced
+from src.sql_backend import fetch_by_block, DB_PATH, fetch_by_muscles_quota
 
 PUSH = {"chest", "triceps", "shoulders"}
 PULL = {"biceps", "lats", "middle_back", "lower_back"}
@@ -63,7 +63,7 @@ MUSCLE_QUOTAS = {
     "lats": (3, 5), "middle_back": (2, 4), "lower_back": (1, 2),
     "quadriceps": (3, 5), "hamstrings": (3, 5), "glutes": (2, 4),
 
-    "shoulders": (2, 4), "biceps": (2, 3), "triceps": (2, 3),
+    "shoulders": (4, 5), "biceps": (3, 4), "triceps": (3, 4),
 
     "traps": (1, 2), "rear_delts": (1, 2), "forearms": (1, 2),
     "calves": (1, 2), "abductors": (0, 1), "adductors": (0, 1),
@@ -122,8 +122,14 @@ class WorkoutPlanner:
         muscle = COMBO_GROUPS.get(split, [])
         if not muscle:
             return []
-        return fetch_by_muscles_balanced(muscle, equipment, difficulty, 3,4, DB_PATH) or []
-
+        return fetch_by_muscles_quota(
+            muscles=muscle,
+            equipment=equipment,
+            difficulty=difficulty,
+            db_path=DB_PATH,
+            quotas=MUSCLE_QUOTAS,
+            shuffle=True
+        ) or []
     def plan_workout(self, limit=4):
         print("DEBUG parsed:", self.parsed)
 

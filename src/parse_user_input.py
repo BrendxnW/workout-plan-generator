@@ -87,9 +87,6 @@ class ParseInput:
         sd = self.text
 
         hits = set()
-        for alias, canon in DAY_ALIASES.items():
-            if re.search(rf"\b{alias}\b", sd):
-                hits.add(canon)
 
         if hits:
             is_negative = re.search(NEG_CUES, sd) is not None

@@ -64,8 +64,62 @@ def fetch_for_muscle(
         rows = con.execute(sql, params).fetchall()
         return [dict(r) for r in rows]
 
-def fetch_by_muscle_quota(muscle, equipment, difficulty, db_path),
+def fetch_by_muscles_quota(
+    muscles,               # list[str]
+    equipment,             # list[str]
+    difficulty: str,       # 'beginner' | 'intermediate' | 'expert'
+    db_path,
+    quotas: dict,          # {'chest': (3,5), ..., '_default': (1,2)}
+    shuffle: bool = True
+):
+    """
+    For each muscle in order, pull min..max per quotas[m].
+    Falls back to quotas['_default'] if muscle not found.
+    Difficulty is preferred (requested tier first), then others.
+    """
+    if not muscles:
+        return []
 
+    eq_list = equipment or ["barbell", "dumbbell", "bodyweight", "cable"]
+    diffs   = _diff_allowed(difficulty)
+
+    placeholders_eq   = ",".join("?" * len(eq_list))
+    placeholders_diff = ",".join("?" * len(diffs))
+
+    sql = f"""
+        SELECT e.id, e.name, e.muscle, e.equipment, e.difficulty
+        FROM exercise e
+        WHERE e.muscle = ?
+          AND e.equipment IN ({placeholders_eq})
+          AND e.difficulty IN ({placeholders_diff})
+        ORDER BY
+          CASE e.difficulty
+            WHEN ? THEN 1
+            WHEN 'expert' THEN 2
+            WHEN 'intermediate' THEN 3
+            WHEN 'beginner' THEN 4
+            ELSE 999
+          END,
+          RANDOM()
+        LIMIT ?
+    """
+
+    out = []
+    with connect(db_path) as con:
+        con.row_factory = sqlite3.Row
+        for m in muscles:
+            min_per, max_per = quotas.get(m, quotas.get("_default", (1, 2)))
+            want = max(0, min_per if max_per <= min_per else random.randint(min_per, max_per))
+            if want <= 0:
+                continue
+
+            params = [m] + list(eq_list) + list(diffs) + [difficulty] + [want]
+            rows = con.execute(sql, params).fetchall()
+            out.extend(dict(r) for r in rows[:want])
+
+    if shuffle:
+        random.shuffle(out)
+    return out
 
 def fetch_by_muscles_balanced(
     muscles,
